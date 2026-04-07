@@ -1,0 +1,56 @@
+# =============================================================================
+# Ceph SMART Collector 설정
+# =============================================================================
+
+global:
+  output_base_dir: "/data/smart-collector/datasets"
+  log_dir: "/data/smart-collector/logs"
+  log_level: "INFO"
+
+ssh:
+  username: "ceph-admin"
+  key_path: "~/.ssh/id_rsa"
+  connect_timeout: 10
+  command_timeout: 120    # 디스크 많은 노드는 오래 걸릴 수 있음
+
+parallelism:
+  max_concurrent_nodes_per_cluster: 50    # 클러스터당 동시 SSH 세션
+  max_total_concurrent_sessions: 200      # 전체 동시 SSH 상한
+  max_concurrent_disks_per_node: 10       # 노드 내 smartctl 동시 실행
+  connection_stagger_delay: 0.05          # SSH 연결 간 지연 (초)
+
+schedule:
+  daily_snapshot_hour: 18
+  retention:
+    hourly_days: 7
+    daily_days: 365
+
+notification:
+  enabled: false
+  # enabled: true
+  # type: "email"
+  # email:
+  #   smtp_server: "smtp.company.com"        # 사내 SMTP 서버
+  #   smtp_port: 587                          # STARTTLS
+  #   use_ssl: false                          # SSL 직접 연결이면 true
+  #   sender: "id@company.com"
+  #   recipients:
+  #     - "id@company.com"
+  # alert_conditions:
+  #   failure_rate_threshold: 0.1
+
+clusters:
+  - name: "cluster-prod-01"
+    nodes:
+      - "ceph-node-001.prod.internal"
+      - "ceph-node-002.prod.internal"
+      - "ceph-node-003.prod.internal"
+    # ssh_override:         # 클러스터별 SSH 설정 (선택)
+    #   username: "other-user"
+    #   key_path: "~/.ssh/other_key"
+
+  - name: "cluster-prod-02"
+    nodes:
+      - "ceph-node-101.prod.internal"
+      - "ceph-node-102.prod.internal"
+      - "ceph-node-103.prod.internal"
